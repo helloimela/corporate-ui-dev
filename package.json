@@ -49,7 +49,7 @@
     "@storybook/addon-links": "^4.1.11",
     "@storybook/addon-options": "^4.1.11",
     "@storybook/html": "^4.1.13",
-    "@types/jest": "23.3.14",
+    "@types/jest": "^23.3.14",
     "@types/puppeteer": "1.12.1",
     "babel-core": "^7.0.0-bridge.0",
     "babel-jest": "^24.1.0",
@@ -62,6 +62,7 @@
     "husky": "^1.3.1",
     "jest": "23.6.0",
     "jest-cli": "23.6.0",
+    "jest-expect-message": "^1.0.2",
     "lint-staged": "^8.1.4",
     "marked": "^0.6.0",
     "node-sass": "^4.11.0",
@@ -79,5 +80,8 @@
     "webpack": "4.28.4"
   },
   "license": "MIT",
-  "dependencies": {}
+  "dependencies": {
+    "expect-more-jest": "^2.4.1",
+    "shallow": "^1.0.0"
+  }
 }

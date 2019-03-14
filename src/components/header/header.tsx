@@ -9,9 +9,9 @@ import * as themes from '../../tmp/header';
   shadow: true
 })
 export class Header {
-  @Prop() theme: string;
+  @Prop() theme: object;
   @Prop() siteName = 'Application name';
-  @Prop() siteUrl = '/';
+ /*  @Prop() siteUrl = '/'; */
   @Prop() topItems: any = [{ text: 'global', location: '/' }];
   @Prop() primaryItems: any;
   @Prop() secondaryItems: any;

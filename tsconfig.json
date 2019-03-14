@@ -15,6 +15,6 @@
     "jsx": "react",
     "jsxFactory": "h"
   },
-  "include": ["src", "types/jsx.d.ts"],
+  "include": ["src", "types/jsx.d.ts", "global.d.ts"],
   "exclude": ["node_modules"]
 }

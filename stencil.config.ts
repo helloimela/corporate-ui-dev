@@ -19,14 +19,14 @@ export const config: Config = {
       type: 'docs-json',
       file: 'data/docs.json'
     },
-    {
+    /* {
       type: 'stats',
       file: 'data/stats.json'
-    }
+    } */
   ],
-  testing: {
+ /*  testing: {
     testPathIgnorePatterns: ['/node_modules/', '/projects/']
-  },
+  }, */
   plugins: [
     sass({
       includePaths: ['node_modules'],
