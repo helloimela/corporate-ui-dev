@@ -5,11 +5,11 @@ const headerComponent = 'c-header';
 let page;
 
 
-let apa = newE2EPage();
+let testPage = newE2EPage();
 
-console.log(apa)
+console.log(testPage)
 
-describe('c-footer', () => {
+describe('c-header', () => {
 
 beforeEach(async () => {
   page = await newE2EPage();
