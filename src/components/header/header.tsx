@@ -1,7 +1,7 @@
 import { Component, Prop, State, Watch } from '@stencil/core';
 
 import { store } from '../../global';
-import * as themes from '../../tmp/header';
+import * as themes from './header';
 
 @Component({
   tag: 'c-header',
@@ -10,11 +10,11 @@ import * as themes from '../../tmp/header';
 })
 export class Header {
   @Prop() theme: string;
-  @Prop() siteName:String = 'Application name';
-  /* @Prop() siteUrl:String = '/'; */
+  @Prop() siteName:any = 'Application name';
+  @Prop() siteUrl:String = '/'
   @Prop() topItems: any = [{ text: 'global', location: '/' }];
-  @Prop() primaryItems: any;
-  @Prop() secondaryItems: any;
+  // @Prop() primaryItems: string;
+  // @Prop() secondaryItems:string;
 
   @State() currentTheme: string = this.theme || store.getState().theme;
   @State() show = false;
