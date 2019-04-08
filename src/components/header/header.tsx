@@ -11,10 +11,10 @@ import * as themes from './header';
 export class Header {
   @Prop() theme: string;
   @Prop() siteName:any = 'Application name';
-  @Prop() siteUrl:String = '/'
+  @Prop() siteUrl:string = '/'
   @Prop() topItems: any = [{ text: 'global', location: '/' }];
-  // @Prop() primaryItems: string;
-  // @Prop() secondaryItems:string;
+  // @Prop() primaryItems: any;
+  @Prop() secondaryItems:string;
 
   @State() currentTheme: string = this.theme || store.getState().theme;
   @State() show = false;
