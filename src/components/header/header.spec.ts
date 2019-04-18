@@ -1,5 +1,5 @@
-import { Header } from './header';
-// import {newSpecPage} from '@stencil/core/testing';
+import { Header} from './header';
+import * as fs from 'fs';
 
 // const comp = new Header();
 const tsHeaderProps = Header.properties;
@@ -8,23 +8,30 @@ let diff = {};
 let errormessage;
 let arrayOfDiffEntries;
 let arrayOfRequiredEntries;
+let jsonContent = {}
 
-const requiredObject = {
-  _topItems: 'state',
-  currentTheme: 'state',
-  primaryItems: 'Any',
-  secondaryItems: 'Any',
-  show: 'state',
-  siteName: 'String',
-  siteUrl: 'String',
-  theme: 'String',
-  topItems: 'Any'
-};
+// console.log(tsHeaderProps)
+
+let rawdata = fs.readFileSync('src/components/header/header.json');   
+let requiredObject  = JSON.parse(rawdata.toString())
 
 Object.entries(tsHeaderProps).forEach(entry => {
   result[entry[0]] = (Object.keys(entry[1]).includes('type') === true) && !(Object.keys(entry[1]).includes('state')) ? (((Object.keys(entry[1]).includes('type') === true) && (Object.values(entry[1]).shift().name)) ? Object.values(entry[1]).shift().name : Object.values(entry[1]).shift()) : 'state';
 });
 
+if ((Object.entries(requiredObject).length === 0 && requiredObject.constructor === Object) === true) {
+  requiredObject = result
+  jsonContent = JSON.stringify(requiredObject);
+
+  fs.writeFile("src/components/header/header.json", jsonContent, 'utf8', function (err) {
+    if (err) {
+      console.log("An error occured while writing JSON Object to File.");
+      return console.log(err);
+    }
+    console.log("JSON file has been saved.");
+  });
+
+} 
 diff = Object.keys(requiredObject).reduce((diff, key) => {
   if (requiredObject[key] === result[key]) return diff;
   return {
