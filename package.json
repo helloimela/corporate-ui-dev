@@ -1,24 +1,21 @@
 {
-  "name": "Corporate-UI",
-  "version": "0.1.1",
+  "name": "corporate-ui-dev",
+  "version": "4.0.0-alpha",
   "description": "In this repository you'll find all components available in the UX Library",
-  "module": ".build/esm/index.js",
-  "main": ".build/index.js",
-  "unpkg": ".build/ionic.js",
-  "types": ".build/types/components.d.ts",
-  "collection": ".build/collection/collection-manifest.json",
+  "module": "dist/esm/index.js",
+  "main": "dist/define.js",
+  "collection": "dist/collection/collection-manifest.json",
   "files": [
-    ".build/",
-    "dist/"
+    "dist"
   ],
   "scripts": {
-    "prepublishOnly": "npm run build",
     "start": "gulp",
     "build": "gulp build",
+    "clean": "gulp clean",
     "server": "gulp server",
     "themes": "gulp themes",
     "storybook": "start-storybook -p 1337 -c public",
-    "lint": "eslint src/ public/ --ext .js,.jsx,.ts,.tsx",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint-fix": "npm run lint -- --fix",
     "lint-debug": "npm run lint -- --debug",
     "test": "stencil test --spec --e2e",
@@ -30,8 +27,8 @@
     }
   },
   "lint-staged": {
-    "{src/,public/}*.{js,jsx,ts,tsx}": [
-      "npm run lint-fix",
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
       "git add"
     ]
   },
