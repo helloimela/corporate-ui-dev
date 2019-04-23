@@ -1,37 +1,40 @@
-import { Header} from './header';
 import * as fs from 'fs';
+// import { Header } from './header';
+import * as path from 'path';
 
-// const comp = new Header();
-const tsHeaderProps = Header.properties;
+// console.log(path)
+
+const componentName = path.basename(__filename).split('.')[0];
+const componentClass = componentName.replace(/\b\w/g, l => l.toUpperCase());
+
+const Component = require(`./${componentName}`)[componentClass];
+
+const tsComponentProps = Component.properties;
 const result = {};
 let diff = {};
 let errormessage;
 let arrayOfDiffEntries;
 let arrayOfRequiredEntries;
-let jsonContent = {}
+let jsonContent = {};
+const rawdata = fs.readFileSync(`src/components/${componentName}/${componentName}.json`);
+let requiredObject = JSON.parse(rawdata.toString());
 
-// console.log(tsHeaderProps)
-
-let rawdata = fs.readFileSync('src/components/header/header.json');   
-let requiredObject  = JSON.parse(rawdata.toString())
-
-Object.entries(tsHeaderProps).forEach(entry => {
+Object.entries(tsComponentProps).forEach(entry => {
   result[entry[0]] = (Object.keys(entry[1]).includes('type') === true) && !(Object.keys(entry[1]).includes('state')) ? (((Object.keys(entry[1]).includes('type') === true) && (Object.values(entry[1]).shift().name)) ? Object.values(entry[1]).shift().name : Object.values(entry[1]).shift()) : 'state';
 });
 
 if ((Object.entries(requiredObject).length === 0 && requiredObject.constructor === Object) === true) {
-  requiredObject = result
+  requiredObject = result;
   jsonContent = JSON.stringify(requiredObject);
 
-  fs.writeFile("src/components/header/header.json", jsonContent, 'utf8', function (err) {
+  fs.writeFile(`src/components/${componentName}/${componentName}.json`, jsonContent, 'utf8', (err) => {
     if (err) {
-      console.log("An error occured while writing JSON Object to File.");
+      console.log('An error occured while writing JSON Object to File.');
       return console.log(err);
     }
-    console.log("JSON file has been saved.");
+    console.log('JSON test file has been saved.');
   });
-
-} 
+}
 diff = Object.keys(requiredObject).reduce((diff, key) => {
   if (requiredObject[key] === result[key]) return diff;
   return {
@@ -47,7 +50,7 @@ arrayOfRequiredEntries = [Object.entries(diff)].map(nested => nested.map((elemen
 errormessage = `@Prop() ${arrayOfDiffEntries.join(' ')} are missing or wrong, should be ` + ` @Prop() ${arrayOfRequiredEntries.join(' ')}`;
 
 it('builds', () => {
-  expect(new Header()).toBeTruthy();
+  expect(new Component()).toBeTruthy();
 });
 
 describe('Test if types are correct and correct Props are present', () => {
