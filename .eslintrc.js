@@ -34,6 +34,7 @@ module.exports =  {
     'no-self-assign': 'off', // check this
     'consistent-return': 'off', // check this
     'no-unused-expressions': 'off', // check this
+    'no-unused-vars': 'off', // check this
     'no-restricted-syntax': 'off', // check this - disables for-in related error
     'global-require': 'off', // check this
     'import/no-dynamic-require': 'off',

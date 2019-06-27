@@ -58,7 +58,7 @@ function cleanAll() {
 }
 
 function components(cb) {
-  exec('stencil build', { maxBuffer: 1024 * 500 }, (err, stdout, stderr) => {
+  exec('stencil build --dev --es5', { maxBuffer: 1024 * 500 }, (err, stdout, stderr) => {
     console.log(stdout);
     console.log(stderr);
     cb();
@@ -70,8 +70,8 @@ function copy() {
     [
       `${stencilBuild}/corporate-ui.js`,
       `${stencilBuild}/corporate-ui/*`,
-      `${stencilBuild}/esm/es5/**`,
-      `${stencilBuild}/collection/collection-manifest.json`,
+      `${stencilBuild}/esm/**`,
+      `${stencilBuild}/loader/*`,
     ],
     { base: stencilBuild },
   )

@@ -1,5 +1,5 @@
 import {
-  Component, Prop, State, Watch,
+  Component, Prop, State, Watch, h,
 } from '@stencil/core';
 
 import * as icons from './icons';

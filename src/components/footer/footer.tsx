@@ -1,5 +1,5 @@
 import {
-  Component, Prop, State, Element, Watch,
+  Component, Prop, State, Element, Watch, h,
 } from '@stencil/core';
 
 import { store } from '../../store';
@@ -30,7 +30,7 @@ export class Footer {
   // There should be a better way of solving this, either by "{ mutable: true }"
   // or "{ reflectToAttr: true }" or harder prop typing Array<Object>
   @State() _items: object[] = [];
-  
+
   @State() initialSlot : any;
 
   @State() _socialMediaItems: object[] = [];
@@ -50,7 +50,7 @@ export class Footer {
 
   componentWillLoad() {
     store.subscribe(() => this.currentTheme = store.getState().theme.name);
-    
+
     this.initialSlot = this.el.innerHTML;
 
     this.setItems(this.items, '_items');
@@ -81,11 +81,11 @@ export class Footer {
 
             <slot name='social-media-items' />
           </nav>
-          
-          { this.initialSlot.indexOf('slot="items"') > 0 || this.items ? 
 
-            <nav class='navbar-nav'> 
-            
+          { this.initialSlot.indexOf('slot="items"') > 0 || this.items
+
+            ? <nav class='navbar-nav'>
+
               { this._items.map((item: any) => {
                 item.class = this.combineClasses(item.class);
                 return <a { ...item }></a>;
@@ -97,7 +97,7 @@ export class Footer {
             : ''
 
           }
-        
+
         <p>
           {this.text}
           <slot name='text' />
