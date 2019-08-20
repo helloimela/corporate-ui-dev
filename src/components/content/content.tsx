@@ -1,9 +1,6 @@
 import {
-  Component, Prop, State, Watch,
+  Component, Prop, State, Element, Watch, Listen,
 } from '@stencil/core';
-
-import { store } from '../../store';
-import * as themes from '../../themes.built/c-content';
 
 @Component({
   tag: 'c-content',
@@ -11,29 +8,59 @@ import * as themes from '../../themes.built/c-content';
   shadow: true,
 })
 export class Content {
+  @Prop({ context: 'store' }) ContextStore: any;
+
   /** Per default, this will inherit the value from c-theme name property */
-  @Prop() theme: string;
+  @Prop({ mutable: true }) theme: string;
 
   /** This property is in experimental state */
   @Prop() router: boolean;
 
-  @State() currentTheme: string = this.theme || store.getState().theme.name;
+  @State() store: any;
+
+  @State() tagName: string;
+
+  @State() currentTheme: object;
+
+  @State() navHeight: any;
+
+  @State() navEl: any;
+
+  @Element() el: HTMLElement;
 
   @Watch('theme')
-  updateTheme(name) {
-    this.currentTheme = name;
+  setTheme(name = undefined) {
+    this.theme = name || this.store.getState().theme.name;
+    this.currentTheme = this.store.getState().themes[this.theme];
+  }
+
+  @Listen('window:resize')
+  onResize() {
+    this.navHeight = this.navEl ? this.navEl.clientHeight : 0;
   }
 
   componentWillLoad() {
-    store.subscribe(() => this.currentTheme = store.getState().theme.name);
+    this.store = this.ContextStore || (window as any).CorporateUi.store;
+
+    this.setTheme(this.theme);
+
+    this.store.subscribe(() => this.setTheme());
+  }
+
+  componentDidLoad() {
+    this.tagName = this.el.nodeName.toLowerCase();
+    this.navEl = document.querySelector('c-navigation');
+  }
+
+  componentDidUpdate() {
+    this.navHeight = this.navEl ? this.navEl.clientHeight : 0;
   }
 
   render() {
-    if (!document.head.attachShadow) {
-      this.currentTheme += '_ie';
-    }
+    if (!document.head.attachShadow) this.el.style.paddingTop = `${this.navHeight}px`;
     return [
-      this.currentTheme ? <style>{ themes[this.currentTheme] }</style> : '',
+      <style {...{ innerHTML: `:host { --navHeight: ${this.navHeight}px;}` }}></style>,
+      this.currentTheme ? <style>{this.currentTheme[this.tagName]}</style> : '',
 
       // Move the router related things a router component
       // if (this.router) {
@@ -47,7 +74,7 @@ export class Content {
       //   );
       // } else {
       <slot />,
-    // }
+      // }
     ];
   }
 }

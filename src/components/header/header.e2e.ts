@@ -13,7 +13,7 @@ describe('c-header', () => {
     await page.setContent(`
       <c-header site-name="${siteName}"></c-header>`);
 
-    const component = await page.find(`c-header`);
+    const component = await page.find('c-header');
     expect(component).toHaveClass('hydrated');
 
     const navbar = await page.find(`${root} .navbar-default`);
@@ -24,7 +24,7 @@ describe('c-header', () => {
 
     const brand = await navbar.find('.navbar-brand');
     expect(brand).not.toBeNull();
-    
+
     const title = await navbar.find('.navbar-title');
     expect(title.textContent).toContain(siteName);
   });
@@ -34,27 +34,11 @@ describe('c-header', () => {
       <c-header>
         <a href="/" slot="items">global</a>
       </c-header>`);
-    
+
     const template = await page.find(`${root} slot[name=items]`);
     expect(template).toBeTruthy();
 
-    const example = await page.find(`c-header a[slot=items]`);
+    const example = await page.find('c-header a[slot=items]');
     expect(example).toBeTruthy();
   });
-
-  it('should render a navigation', async () => {
-    await page.setContent(`
-      <c-header>
-        <c-navigation slot="navigation">
-          <a href="/home">home</a>
-        <c-navigation>
-      </c-header>`);
-    
-    const template = await page.find(`${root} slot[name=navigation]`);
-    expect(template).toBeTruthy();
-
-    const example = await page.find(`c-header c-navigation[slot=navigation]`);
-    expect(example).toBeTruthy();
-  });
-
 });

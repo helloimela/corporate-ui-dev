@@ -1,9 +1,8 @@
 import {
-  Component, Prop, State, Element, Watch,
+  Component, Prop, State, Element, Watch, Listen,
 } from '@stencil/core';
 
-import { store, actions } from '../../store';
-import * as themes from '../../themes.built/c-navigation';
+import { actions } from '../../store';
 
 @Component({
   tag: 'c-navigation',
@@ -11,17 +10,19 @@ import * as themes from '../../themes.built/c-navigation';
   shadow: true,
 })
 export class Navigation {
+  @Prop({ context: 'store' }) ContextStore: any;
+
   /** Per default, this will inherit the value from c-theme name property */
-  @Prop() theme: string;
+  @Prop({ mutable: true }) theme: string;
 
   /** Set the orientation for the navigation (vertical or horisontal). The default is horisontal navigation. */
-  @Prop() orientation: string = '';
+  @Prop() orientation = '';
 
   /** Item links on the left side of the navigation */
-  @Prop() primaryItems: any;
+  @Prop({ mutable: true }) primaryItems: any;
 
   /** Item links on the right side of the navigation. On vertical orientation, it will be added in order after primary-items. */
-  @Prop() secondaryItems: any;
+  @Prop({ mutable: true }) secondaryItems: any;
 
   /** Used to show a text in front of generated items on desktop and add a describing text for navigating back in mobile mode for sub navigation */
   @Prop() caption: string;
@@ -29,61 +30,113 @@ export class Navigation {
   /** Used to dynamically connect current node to a parent item in mobile mode interaction */
   @Prop() target: string;
 
+  /** Option to disable sticky feature */
+  @Prop() sticky = true;
+
+  @State() store: any;
+
+  @State() navigationOpen: boolean;
+
+  @State() navigationExpanded: string;
+
   @State() isSub: boolean;
 
-  @State() navigationOpen: boolean = store.getState().navigation.open;
+  @State() tagName: string;
 
-  @State() navigationExpanded: string = store.getState().navigation.expanded;
-
-  @State() currentTheme: string = this.theme || store.getState().theme.name;
-
-  @State() _primaryItems: object[] = [];
-
-  @State() _secondaryItems: object[] = [];
+  @State() currentTheme: object;
 
   @State() parentEl: any;
+
+  @State() navWidth: any;
+
+  @State() navHeight = 0 ;
+
+  @State() scrollPos = 0;
+
+  @State() isIE: boolean;
 
   @Element() el: HTMLElement;
 
   @Watch('primaryItems')
+  setPrimaryItems(items) {
+    this.primaryItems = this.parse(items);
+  }
+
   @Watch('secondaryItems')
-  setItems(items, type) {
-    this[`_${type}`] = Array.isArray(items) ? items : JSON.parse(items || '[]');
+  setSecondaryItems(items) {
+    this.secondaryItems = this.parse(items);
   }
 
   @Watch('theme')
-  updateTheme(name) {
-    this.currentTheme = name;
+  setTheme(name = undefined) {
+    this.theme = name || this.store.getState().theme.name;
+    this.currentTheme = this.store.getState().themes[this.theme];
+  }
+
+  @Listen('window:scroll')
+  handleScroll() {
+    let isStick = false;
+    // try catch is used to avoid error in IE with getBoundingClientRect
+    if (this.sticky) {
+      try {
+        isStick = this.el.getBoundingClientRect().top <= 0;
+      } catch (e) { console.log(e); }
+
+      if (!this.isSub) {
+        isStick ? this.el.setAttribute('stuck', 'true') : this.el.removeAttribute('stuck');
+      }
+
+      if (this.isIE) {
+        if (this.el != null) {
+          if ((window.pageYOffset || document.documentElement.scrollTop) <= this.scrollPos) this.el.removeAttribute('stuck');
+        }
+      }
+    }
+  }
+
+  @Listen('window:resize')
+  onResize() {
+    this.navHeight = !this.isSub ? this.el.clientHeight * -1 : 0;
+    this.navWidth = (document.querySelector('c-header') || {} as any).clientWidth;
   }
 
   toggleNavigation(open) {
-    store.dispatch({ type: actions.TOGGLE_NAVIGATION, open });
+    this.store.dispatch({ type: actions.TOGGLE_NAVIGATION, open });
   }
 
   toggleSubNavigation(expanded) {
-    store.dispatch({ type: actions.TOGGLE_SUB_NAVIGATION, expanded });
+    this.store.dispatch({ type: actions.TOGGLE_SUB_NAVIGATION, expanded });
   }
 
   componentWillLoad() {
-    store.subscribe(() => {
-      this.currentTheme = store.getState().theme.name;
-      this.navigationOpen = store.getState().navigation.open;
-      this.navigationExpanded = store.getState().navigation.expanded;
-    });
+    this.store = this.ContextStore || (window as any).CorporateUi.store;
 
-    this.setItems(this.primaryItems, 'primaryItems');
-    this.setItems(this.secondaryItems, 'secondaryItems');
+    this.setTheme(this.theme);
+    this.setPrimaryItems(this.primaryItems);
+    this.setSecondaryItems(this.secondaryItems);
+
+    this.store.subscribe(() => {
+      this.navigationOpen = this.store.getState().navigation.open;
+      this.navigationExpanded = this.store.getState().navigation.expanded;
+
+      this.setTheme();
+    });
   }
 
   componentDidLoad() {
-    // To make sure navigation is always show from start
+    // To make sure navigation is always shown from start
     this.toggleNavigation(true);
 
+    if (!this.el) return;
+
+    this.tagName = this.el.nodeName.toLowerCase();
     this.isSub = this.el.getAttribute('slot') === 'sub';
+
+    this.isIE = !document.head.attachShadow;
 
     const items = this.el.querySelectorAll('c-navigation[target]');
 
-    if (!document.head.attachShadow) {
+    if (this.isIE) {
       [this.parentEl] = Array.from(this.el.children).filter(e => e.matches('nav'));
     } else {
       this.parentEl = this.el;
@@ -96,6 +149,23 @@ export class Navigation {
       node.classList.add('parent');
       node.onclick = (event) => this.open(event);
     }
+  }
+
+  componentDidUpdate() {
+    this.navHeight = !this.isSub ? this.el.clientHeight * -1 : 0;
+    // fallback of sticky on IE
+    if (this.isIE) {
+      setTimeout(() => {
+        try {
+          this.scrollPos = this.scrollPos === 0 ? this.el.getBoundingClientRect().top : this.scrollPos;
+        } catch (e) { console.log(e); }
+        if (this.el.querySelector('.navbar')) this.navWidth = this.el.querySelector('.navbar').clientWidth;
+      }, 100);
+    }
+  }
+
+  parse(items) {
+    return Array.isArray(items) ? items : JSON.parse(items || '[]');
   }
 
   combineClasses(classes) {
@@ -131,14 +201,15 @@ export class Navigation {
   }
 
   render() {
-    if (!document.head.attachShadow) {
-      this.currentTheme += '_ie';
+    if (this.isIE && window.innerWidth > 992) {
+      this.el.style.width = `${this.navWidth}px`;
+      this.el.style.marginBottom = `${this.navHeight}px`;
     }
     return [
-      this.currentTheme ? <style>{ themes[this.currentTheme] }</style> : '',
+      <style { ...{ innerHTML: `:host { --navHeight: ${this.navHeight}px;}` } }></style>,
+      this.currentTheme ? <style id="themeStyle">{ this.currentTheme[this.tagName] }</style> : '',
 
-      <nav class={`navbar navbar-expand-lg ${this.orientation}`}>
-        <div class={`collapse navbar-collapse${this.navigationOpen ? ' show' : ''}`}>
+      <nav class={`navbar navbar-expand-lg ${this.orientation} ${this.navigationOpen ? ' show' : ''}`}>
           <nav class='navbar-nav'>
             { this.isSub
               ? [
@@ -148,25 +219,24 @@ export class Navigation {
               : ''
             }
 
-            { this._primaryItems.map((item: any) => {
+            { this.primaryItems.map((item: any) => {
               item.class = this.combineClasses(item.class);
               return <a { ...item }></a>;
             }) }
 
             <slot name="primary-items" />
           </nav>
-        </div>
 
-        <div class={`collapse navbar-collapse${this.navigationOpen ? ' show' : ''}`}>
-          <nav class='navbar-nav ml-auto'>
-            { this._secondaryItems.map((item: any) => {
+          <nav class={`navbar-nav ${this.orientation !== 'vertical' ? 'ml-auto' : ''}`}>
+            { this.secondaryItems.map((item: any) => {
               item.class = this.combineClasses(item.class);
               return <a { ...item }></a>;
             }) }
 
             <slot name="secondary-items" />
           </nav>
-        </div>
+
+        <a class='navbar-symbol'></a>
       </nav>,
 
       <slot name="sub" />,
